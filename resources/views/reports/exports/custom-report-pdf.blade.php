@@ -282,6 +282,9 @@
         </tbody>
     </table>
     
+    <!-- Cartouche de signatures (aligné à droite, avant la légende) -->
+    @include('reports.exports.partials.signataires', ['signatairePostes' => $signatairePostes ?? collect()])
+
     <!-- Légende et notes -->
     <div style="margin-top: 15px; font-size: 8px; color: #666;">
         <p><strong>Légende :</strong></p>
@@ -295,7 +298,7 @@
         2. Les statistiques portent uniquement sur les jours ouvrés (lundi-vendredi).<br>
         3. Les weekends et jours fériés ne sont pas inclus dans le calcul.</p>
     </div>
-    
+
     <!-- Pied de page -->
     <div class="footer">
         <span class="page-number"></span> | 

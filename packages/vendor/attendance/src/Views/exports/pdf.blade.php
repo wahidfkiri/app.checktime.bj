@@ -147,18 +147,16 @@
             border-radius: 15px;
             font-size: 9px;
             font-weight: bold;
-            text-transform: uppercase;
         }
         
-        .status-present {
-            background-color: #198754;
-            color: white;
-        }
-        
-        .status-absent {
-            background-color: #dc3545;
-            color: white;
-        }
+        .status-present { background-color: #198754; color: white; }
+        .status-absent { background-color: #dc3545; color: white; }
+        .status-late { background-color: #ffc107; color: #212529; }
+        .status-early_leave { background-color: #0dcaf0; color: #212529; }
+        .status-half_day { background-color: #0d6efd; color: white; }
+        .status-overtime { background-color: #198754; color: white; }
+        .status-short_work { background-color: #ffc107; color: #212529; }
+        .status-leave { background-color: #6c757d; color: white; }
         
         .punches-cell {
             max-width: 150px;
@@ -217,34 +215,15 @@
         }
         
         /* Styles spécifiques pour l'export */
-        .column-date {
-            width: 10%;
-        }
-        
-        .column-employee {
-            width: 20%;
-        }
-        
-        .column-empcode {
-            width: 8%;
-        }
-        
-        .column-punches {
-            width: 25%;
-        }
-        
-        .column-hours {
-            width: 10%;
-        }
-        
-        
-        .column-status {
-            width: 7%;
-        }
-        
-        .column-matched {
-            width: 5%;
-        }
+        .column-date { width: 10%; }
+        .column-employee { width: 18%; }
+        .column-empcode { width: 8%; }
+        .column-punches { width: 22%; }
+        .column-checkin { width: 8%; }
+        .column-checkout { width: 8%; }
+        .column-hours { width: 8%; }
+        .column-status { width: 10%; }
+        .column-matched { width: 8%; }
         
         .summary-row {
             background-color: #e3f2fd !important;
@@ -259,6 +238,18 @@
         .summary-value {
             color: #4e73df;
         }
+        
+        .notes-cell {
+            font-size: 9px;
+            color: #666;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+        
+        .hours-detail {
+            font-size: 9px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -268,6 +259,50 @@
         <div class="period">Période: {{ $start_date }} au {{ $end_date }}</div>
     </div>
     
+    <!-- Informations client -->
+    <div class="client-info">
+        <h3>Client: {{ $client->nraison_sociale }}</h3>
+        <p><strong>Date d'export:</strong> {{ $export_date }}</p>
+        <p><strong>Période:</strong> {{ $start_date }} au {{ $end_date }}</p>
+        @if(!empty($filters))
+        <div class="filters-section">
+            <div class="filters-title">Filtres appliqués:</div>
+            <div class="filters-grid">
+                @foreach($filters as $key => $value)
+                <div class="filter-item">
+                    <span class="filter-label">{{ $key }}:</span> {{ $value }}
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+    
+    <!-- Statistiques -->
+    @php
+        // Calculer les totaux pour le PDF
+        $totalHours = collect($attendances)->sum('work_hours');
+        $uniqueEmployees = collect($attendances)->pluck('emp_code')->unique()->count();
+    @endphp
+    
+    <div class="statistics">
+        <div class="stat-card">
+            <div class="stat-number">{{ count($attendances) }}</div>
+            <div class="stat-label">Total présences</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $statistics['present'] ?? $statistics['present_days'] ?? 0 }}</div>
+            <div class="stat-label">Présents</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ $statistics['absent'] ?? $statistics['absent_days'] ?? 0 }}</div>
+            <div class="stat-label">Absents</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ number_format($statistics['avg_work_hours'] ?? 0, 2) }}h</div>
+            <div class="stat-label">Moyenne heures</div>
+        </div>
+    </div>
     
     @if(count($attendances) > 0)
     <table>
@@ -277,15 +312,18 @@
                 <th class="column-employee">Employé</th>
                 <th class="column-empcode">Code</th>
                 <th class="column-punches">Pointages</th>
+                <th class="column-checkin">Check-in</th>
+                <th class="column-checkout">Check-out</th>
                 <th class="column-hours">Durée</th>
                 <th class="column-status">Statut</th>
-                <th class="column-matched">Enregistré</th>
             </tr>
         </thead>
         <tbody>
             @php
                 $currentDate = null;
                 $dateCount = 0;
+                $pdfTotalHours = 0;
+                $pdfUniqueEmployees = [];
             @endphp
             
             @foreach($attendances as $attendance)
@@ -296,7 +334,7 @@
                             <td colspan="3" class="summary-label">
                                 Total pour {{ $currentDate }}:
                             </td>
-                            <td class="summary-value">
+                            <td class="summary-value" colspan="2">
                                 {{ $dateCount }} employé(s)
                             </td>
                             <td colspan="4"></td>
@@ -310,46 +348,73 @@
                 @else
                     @php $dateCount++; @endphp
                 @endif
+                
+                @php
+                    $pdfTotalHours += $attendance['work_hours'];
+                    if (!in_array($attendance['emp_code'], $pdfUniqueEmployees)) {
+                        $pdfUniqueEmployees[] = $attendance['emp_code'];
+                    }
+                @endphp
             
             <tr>
                 <td>{{ $attendance['date'] }}</td>
                 <td>
                     {{ $attendance['full_name'] }}
-                    @if($attendance['employee_found'] === 'Non')
+                    @if(strpos($attendance['full_name'], 'Non enregistré') !== false)
                     <span class="employee-not-found">*</span>
                     @endif
                 </td>
                 <td>{{ $attendance['emp_code'] }}</td>
                 <td class="punches-cell">
-                    <div style="margin-bottom: 3px;">
-                        @foreach($attendance['punch_list'] as $punch)
+                    @if(!empty($attendance['punch_times']))
+                        @php
+                            $punchArray = explode(', ', $attendance['punch_times']);
+                        @endphp
+                        @foreach($punchArray as $punch)
                             <span class="punch-time">{{ $punch }}</span>
                         @endforeach
-                    </div>
-                    <div style="font-size: 9px; color: #666;">
-                        @if($attendance['first_punch'])
-                        Début: <strong>{{ $attendance['first_punch'] }}</strong>
-                        @endif
-                        @if($attendance['last_punch'])
-                        | Fin: <strong>{{ $attendance['last_punch'] }}</strong>
-                        @endif
-                        | Total: <strong>{{ $attendance['total_punches'] }}</strong>
-                    </div>
+                        <div class="hours-detail">
+                            Total: {{ count($punchArray) }} pointage(s)
+                        </div>
+                    @else
+                        <span class="text-muted">Aucun</span>
+                    @endif
                 </td>
                 <td class="text-center">
-                    @if($attendance['total_work_hours'])
-                    <strong>{{ $attendance['total_work_hours'] }}h</strong>
+                    @if($attendance['check_in'] !== 'N/A')
+                    <strong>{{ $attendance['check_in'] }}</strong>
                     @else
                     <span class="text-muted">-</span>
                     @endif
                 </td>
                 <td class="text-center">
-                    <span class="status-badge status-{{ strtolower($attendance['status']) }}">
-                        {{ $attendance['status'] }}
-                    </span>
+                    @if($attendance['check_out'] !== 'N/A')
+                    <strong>{{ $attendance['check_out'] }}</strong>
+                    @else
+                    <span class="text-muted">-</span>
+                    @endif
                 </td>
                 <td class="text-center">
-                    {{ $attendance['employee_found'] }}
+                    @if($attendance['work_hours'] > 0)
+                    <strong>{{ number_format($attendance['work_hours'], 2) }}h</strong>
+                    @if(isset($attendance['overtime_hours']) && $attendance['overtime_hours'] > 0)
+                        <div class="hours-detail" style="color: #198754;">
+                            +{{ number_format($attendance['overtime_hours'], 2) }}h sup
+                        </div>
+                    @endif
+                    @else
+                    <span class="text-muted">-</span>
+                    @endif
+                </td>
+                <td class="text-center">
+                    <span class="status-badge status-{{ strtolower(str_replace(' ', '_', $attendance['status'])) }}">
+                        {{ $attendance['status'] }}
+                    </span>
+                    @if(!empty($attendance['notes']))
+                    <div class="notes-cell">
+                        {{ $attendance['notes'] }}
+                    </div>
+                    @endif
                 </td>
             </tr>
             @endforeach
@@ -360,7 +425,7 @@
                 <td colspan="3" class="summary-label">
                     Total pour {{ $currentDate }}:
                 </td>
-                <td class="summary-value">
+                <td class="summary-value" colspan="2">
                     {{ $dateCount }} employé(s)
                 </td>
                 <td colspan="4"></td>
@@ -375,12 +440,23 @@
                 <td class="summary-value">
                     <strong>{{ count($attendances) }} présence(s)</strong>
                 </td>
-                <td colspan="4"></td>
+                <td class="text-center">
+                    <strong>{{ count($pdfUniqueEmployees) }} employé(s)</strong>
+                </td>
+                <td class="text-center">
+                    <strong>{{ number_format($pdfTotalHours, 2) }}h</strong>
+                </td>
+                <td class="text-center">
+                    <strong>{{ number_format($statistics['total_overtime_hours'] ?? 0, 2) }}h sup</strong>
+                </td>
+                <td colspan="2"></td>
             </tr>
         </tbody>
     </table>
     
-    @if(collect($attendances)->contains('employee_found', 'Non'))
+    @if(collect($attendances)->contains(function($attendance) {
+        return strpos($attendance['full_name'], 'Non enregistré') !== false;
+    }))
     <div style="margin-top: 10px; font-size: 10px; color: #dc3545;">
         * Employé non enregistré dans la base de données
     </div>
@@ -388,9 +464,15 @@
     
     <div class="footer">
         <p>Document généré automatiquement par le système de pointage</p>
-        <p>Total: {{ count($attendances) }} présence(s) | 
-           Présents: {{ $statistics['present'] }} | 
-           Absents: {{ $statistics['absent'] }}</p>
+        <p><strong>Statistiques:</strong> 
+           Présences: {{ count($attendances) }} | 
+           Employés uniques: {{ count($pdfUniqueEmployees) }} | 
+           Heures totales: {{ number_format($pdfTotalHours, 2) }}h | 
+           Heures supplémentaires: {{ number_format($statistics['total_overtime_hours'] ?? 0, 2) }}h</p>
+        <p>Présents: {{ $statistics['present'] ?? $statistics['present_days'] ?? 0 }} | 
+           Absents: {{ $statistics['absent'] ?? $statistics['absent_days'] ?? 0 }} | 
+           Retards: {{ $statistics['late_days'] ?? 0 }} | 
+           Demi-journées: {{ $statistics['half_days'] ?? 0 }}</p>
     </div>
     @else
     <div class="no-data">

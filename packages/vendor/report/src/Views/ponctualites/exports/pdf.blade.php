@@ -23,6 +23,7 @@
             border-bottom: 2px solid #000;
         }
         
+        
         /* Logo du client */
         .client-logo {
             position: absolute;
@@ -117,7 +118,7 @@
             content: "Page " counter(page);
         }
         
-        /* Styles spécifiques pour le tableau principal */
+        /* Styles spécifiques pour le tableau */
         .col-order { width: 5%; }
         .col-name { width: 20%; text-align: left; }
         .col-presence { width: 25%; }
@@ -152,74 +153,27 @@
             margin-bottom: 5px;
             color: #555;
         }
-        
-        /* Styles pour le tableau de présence par département */
-        .dept-header {
-            background-color: #d9e1f2;
-            font-weight: bold;
-            font-size: 11px;
-        }
-        
-        .dept-name {
-            background-color: #e8edf9;
-            font-weight: bold;
-            text-align: left;
-            padding-left: 10px;
-        }
-        
-        .check-time {
-            font-family: monospace;
-            font-size: 9px;
-        }
-        
-        .late-time {
-            color: #ff6600;
-            font-weight: bold;
-        }
-        
-        .ontime-time {
-            color: #008000;
-        }
-        
-        .observation-note {
-            font-size: 8px;
-            text-align: left;
-            color: #666;
-        }
-        
-        .week-title {
-            background-color: #c0c0c0;
-            font-weight: bold;
-            font-size: 12px;
-            text-align: center;
-        }
-        
-        .day-header {
-            background-color: #f0f0f0;
-            font-weight: bold;
-            font-size: 9px;
-        }
     </style>
 </head>
 <body>
     <!-- En-tête -->
     <div class="header">
         <!-- Logo du client -->
-        @if(isset($client->logo) && $client->logo)
+         @if(isset($client->logo) && $client->logo)
         <img src="<?php echo $_SERVER["DOCUMENT_ROOT"]; ?>/storage/app/public/<?php echo $client->logo; ?>" alt="{{$client->raison_sociale}}" class="client-logo">
-        @endif
+    @endif
         <div class="header-content">
-            <div class="title">RAPPORT DE PRÉSENCE & PONCTUALITÉ</div>
-            <div class="period-info">
-                Période : {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}
-                ({{ $period_days }} jours)
-            </div>
-            <div class="client-info">
-                Client : {{ $client->name }} | 
-                Employés : {{ $total_employees }} | 
-                Exporté le : {{ $export_date->format('d/m/Y à H:i') }}
-            </div>
+        <div class="title">RAPPORT DE PRÉSENCE & PONCTUALITÉ</div>
+        <div class="period-info">
+            Période : {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }} au {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}
+            ({{ $period_days }} jours)
         </div>
+        <div class="client-info">
+            Client : {{ $client->name }} | 
+            Employés : {{ $total_employees }} | 
+            Exporté le : {{ $export_date->format('d/m/Y à H:i') }}
+        </div>
+    </div>
     </div>
     
     <!-- Information sur le tri -->
@@ -227,7 +181,7 @@
         Les employés sont classés par ordre décroissant de la somme des taux de présence et ponctualité
     </div>
     
-    <!-- Tableau principal - Présence & Ponctualité -->
+    <!-- Tableau principal -->
     <table>
         <thead>
             <tr>
@@ -328,116 +282,6 @@
         </tbody>
     </table>
     
-    <!-- Espacement entre les deux tableaux -->
-    <div style="margin-top: 20px; margin-bottom: 10px;">
-        <hr style="border: 1px solid #ccc;">
-    </div>
-    
-    <!-- Deuxième tableau : Situation de présence du Personnel par département -->
-    <div class="sort-info" style="margin-top: 15px;">
-        <strong>SITUATION DE PRÉSENCE DU PERSONNEL</strong> - Heures d'arrivée et de départ par département
-    </div>
-    
-    @php
-        // Grouper les données par département
-        $groupedByDept = collect($report_data)->groupBy('department_name');
-        
-        // Générer la liste des jours de la période
-        $start = \Carbon\Carbon::parse($start_date);
-        $end = \Carbon\Carbon::parse($end_date);
-        $daysOfWeek = [];
-        $currentDate = $start->copy();
-        
-        while ($currentDate <= $end) {
-            $dayOfWeekNumber = $currentDate->dayOfWeekIso;
-            // Inclure seulement les jours de semaine (lundi-vendredi)
-            if ($dayOfWeekNumber >= 1 && $dayOfWeekNumber <= 5) {
-                $daysOfWeek[] = [
-                    'date' => $currentDate->copy(),
-                    'day_name' => $this->getDayNameFrench($currentDate->dayOfWeekIso),
-                    'date_str' => $currentDate->format('Y-m-d'),
-                    'day_number' => $currentDate->day
-                ];
-            }
-            $currentDate->addDay();
-        }
-        
-        // Semaine du...
-        $weekStart = $start->copy();
-        $weekEnd = $end->copy();
-        $weekRange = "SEMAINE DU LUNDI " . $weekStart->format('d') . " " . $this->getMonthNameFrench($weekStart->month) . " AU VENDREDI " . $weekEnd->format('d') . " " . $this->getMonthNameFrench($weekEnd->month);
-    @endphp
-    
-    @foreach($groupedByDept as $deptName => $employees)
-        <table style="margin-top: 15px; margin-bottom: 15px;">
-            <!-- Titre de la semaine -->
-            <tr>
-                <td colspan="{{ count($daysOfWeek) + 3 }}" class="week-title" style="background-color: #c0c0c0; font-weight: bold; text-align: center;">
-                    {{ $weekRange }}
-                </td>
-            </tr>
-            <tr>
-                <td colspan="{{ count($daysOfWeek) + 3 }}" style="background-color: #f5f5f5; height: 5px;"></td>
-            </tr>
-            <tr>
-                <td colspan="{{ count($daysOfWeek) + 3 }}" style="background-color: #e0e0e0; font-weight: bold; text-align: center;">
-                    HEURES D'ARRIVEE ET DE DEPART
-                </td>
-            </tr>
-            <tr>
-                <th style="width: 5%;">N°</th>
-                <th style="width: 25%; text-align: left;">NOM ET PRENOMS</th>
-                @foreach($daysOfWeek as $day)
-                    <th style="width: {{ 60 / count($daysOfWeek) }}%;" class="day-header">
-                        {{ $day['day_name'] }}<br>
-                        <small>{{ $day['date']->format('d/m') }}</small>
-                    </th>
-                @endforeach
-                <th style="width: 15%;">OBSERVATIONS</th>
-            </tr>
-            <tr>
-                <td colspan="{{ count($daysOfWeek) + 3 }}" class="dept-name">
-                    <strong>DÉPARTEMENT : {{ strtoupper($deptName) }}</strong>
-                </td>
-            </tr>
-            
-            @php
-                $empCounter = 1;
-            @endphp
-            
-            @foreach($employees as $employee)
-                <tr>
-                    <td>{{ $empCounter++ }}</td>
-                    <td style="text-align: left; font-weight: bold;">{{ strtoupper($employee['employee_name']) }}</td>
-                    
-                    @foreach($daysOfWeek as $day)
-                        @php
-                            // Récupérer les données de pointage pour ce jour
-                            $checkData = $this->getEmployeeCheckData($employee['employee_id'], $day['date_str']);
-                        @endphp
-                        <td class="check-time">
-                            @if($checkData)
-                                <span class="{{ $checkData['is_late'] ? 'late-time' : 'ontime-time' }}">
-                                    {{ $checkData['check_in'] ?? '-' }}<br>
-                                    {{ $checkData['check_out'] ?? '-' }}
-                                </span>
-                                @if($checkData['is_late'])
-                                    <br><small style="color: #ff6600; font-size: 7px;">({{ $checkData['late_minutes'] }} min)</small>
-                                @endif
-                            @else
-                                -
-                            @endif
-                        </td>
-                    @endforeach
-                    
-                    <td class="observation-note">
-                        {{ $employee['observation'] }}
-                    </td>
-                </tr>
-            @endforeach
-        </table>
-    @endforeach
-    
     <!-- Légende et notes -->
     <div style="margin-top: 15px; font-size: 8px; color: #666;">
         <p><strong>Légende :</strong></p>
@@ -449,9 +293,7 @@
         <p><strong>Notes :</strong> 
         1. Les employés sont classés par ordre décroissant de la somme des taux de présence et ponctualité.<br>
         2. Les statistiques portent uniquement sur les jours ouvrés (lundi-vendredi).<br>
-        3. Les weekends et jours fériés ne sont pas inclus dans le calcul.<br>
-        4. Les heures de pointage affichées sont les heures d'arrivée et de départ enregistrées.
-        </p>
+        3. Les weekends et jours fériés ne sont pas inclus dans le calcul.</p>
     </div>
     
     <!-- Pied de page -->

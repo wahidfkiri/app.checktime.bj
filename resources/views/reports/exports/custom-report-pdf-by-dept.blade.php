@@ -418,6 +418,93 @@
     @endif
 
     <!-- ====================================================
+         TABLEAU INTERMEDIAIRE : RECAPITULATIF PAR EMPLOYE
+    ===================================================== -->
+    <div class="week-title" style="margin-top: 20px; margin-bottom: 15px;">
+        RECAPITULATIF PAR EMPLOYE
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="width: 5%;">N° d'ordre</th>
+                <th rowspan="2" style="width: 18%; text-align: left;">Nom et Prénoms</th>
+                <th colspan="4" style="background-color: #d9d9d9;">PRESENCE AU POSTE</th>
+                <th colspan="3" style="background-color: #d9d9d9;">PONCTUALITE</th>
+                <th rowspan="2" style="width: 15%;">Observation</th>
+            </tr>
+            <tr class="sub-header">
+                <th style="width: 7%;">Présence</th>
+                <th style="width: 7%;">Absence</th>
+                <th style="width: 8%;">Taux de présence</th>
+                <th style="width: 7%;">Détail</th>
+                <th style="width: 7%;">A l'heure</th>
+                <th style="width: 7%;">Retard</th>
+                <th style="width: 9%;">Taux de ponctualité</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $employeeRowNumber = 1; @endphp
+            @foreach($report_data as $department)
+                @foreach($department['employees'] as $employee)
+                    @php
+                        $present = $employee['stats']['present'] ?? 0;
+                        $absent = $employee['stats']['absent'] ?? 0;
+                        $late = $employee['stats']['late'] ?? 0;
+                        $earlyLeave = $employee['stats']['early_leave'] ?? 0;
+                        $onTime = max($present - $late - $earlyLeave, 0);
+                        $presenceRate = $employee['stats']['presence_rate'] ?? 0;
+                        $ponctualiteRate = $employee['stats']['ponctualite_rate'] ?? 0;
+                        $detailBase = $present + $absent;
+                    @endphp
+                    <tr>
+                        <td>{{ $employeeRowNumber++ }}</td>
+                        <td class="employee-name">
+                            {{ strtoupper($employee['employee_name']) }}<br>
+                            <small class="small-note">({{ $employee['employee_code'] }}) - {{ $department['department_name'] }}</small>
+                        </td>
+                        <td class="present">{{ number_format($present) }}</td>
+                        <td class="absent">{{ number_format($absent) }}</td>
+                        <td>
+                            <span class="rate-{{ $presenceRate >= 90 ? 'high' : ($presenceRate >= 80 ? 'medium' : 'low') }}">
+                                {{ number_format($presenceRate, 1) }}%
+                            </span>
+                        </td>
+                        <td class="small-note">{{ number_format($present) }}/{{ number_format($detailBase) }}</td>
+                        <td>{{ number_format($onTime) }}</td>
+                        <td class="late">{{ number_format($late) }}</td>
+                        <td>
+                            <span class="rate-{{ $ponctualiteRate >= 90 ? 'high' : ($ponctualiteRate >= 80 ? 'medium' : 'low') }}">
+                                {{ number_format($ponctualiteRate, 1) }}%
+                            </span>
+                        </td>
+                        <td class="observation-note">{{ $employee['observations'] ?? 'Aucune observation' }}</td>
+                    </tr>
+                @endforeach
+            @endforeach
+            <tr class="total-row">
+                <td colspan="2" style="text-align: right;"><strong>TOTAUX :</strong></td>
+                <td><strong>{{ number_format($totals['total_present'] ?? 0) }}</strong></td>
+                <td><strong>{{ number_format($totals['total_absent'] ?? 0) }}</strong></td>
+                <td>
+                    <strong class="rate-{{ ($totals['avg_presence_rate'] ?? 0) >= 90 ? 'high' : (($totals['avg_presence_rate'] ?? 0) >= 80 ? 'medium' : 'low') }}">
+                        {{ number_format($totals['avg_presence_rate'] ?? 0, 1) }}%
+                    </strong>
+                </td>
+                <td class="small-note">{{ number_format($totals['total_present'] ?? 0) }}/{{ number_format(($totals['total_present'] ?? 0) + ($totals['total_absent'] ?? 0)) }}</td>
+                <td><strong>{{ number_format($totals['total_on_time'] ?? 0) }}</strong></td>
+                <td><strong>{{ number_format($totals['total_late'] ?? 0) }}</strong></td>
+                <td>
+                    <strong class="rate-{{ ($totals['avg_ponctualite_rate'] ?? 0) >= 90 ? 'high' : (($totals['avg_ponctualite_rate'] ?? 0) >= 80 ? 'medium' : 'low') }}">
+                        {{ number_format($totals['avg_ponctualite_rate'] ?? 0, 1) }}%
+                    </strong>
+                </td>
+                <td>-</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ====================================================
          TABLEAU 2 : DÉTAIL PAR EMPLOYÉ — HEURES DE POINTAGE
     ===================================================== -->
     <div class="week-title" style="margin-top: 20px; margin-bottom: 15px;">
@@ -548,6 +635,9 @@
         @endif
     @endforeach
 
+    <!-- Cartouche de signatures (aligné à droite, avant la légende) -->
+    @include('reports.exports.partials.signataires', ['signatairePostes' => $signatairePostes ?? collect()])
+
     <!-- Légende -->
     <div style="margin-top: 15px; font-size: 8px; color: #666;">
         <p><strong>Légende :</strong></p>
@@ -568,7 +658,7 @@
 
     <!-- Pied de page -->
     <div class="footer">
-        <span class="page-number"></span> | 
+        <span class="page-number"></span> |
         Rapport généré le {{ $export_date->format('d/m/Y à H:i') }}
     </div>
 </body>

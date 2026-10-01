@@ -43,12 +43,12 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- Date fin - Modifié pour ajouter 1 jour -->
+                                            <!-- Date fin -->
                                             <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label for="filter_end_date" class="form-label">Date fin</label>
                                                     <input type="date" class="form-control" id="filter_end_date" 
-                                                           value="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                                                           value="{{ date('Y-m-d') }}">
                                                 </div>
                                             </div>
                                             
@@ -263,16 +263,6 @@ $(document).ready(function() {
         return year + '-' + month + '-' + day;
     }
     
-    // Obtenir la date de demain (aujourd'hui + 1 jour)
-    function getTomorrowDate() {
-        var tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        var year = tomorrow.getFullYear();
-        var month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        var day = String(tomorrow.getDate()).padStart(2, '0');
-        return year + '-' + month + '-' + day;
-    }
-    
     // Afficher le chargement
     function showLoading(message) {
         $('#loading-message').text(message || 'Chargement...');
@@ -332,18 +322,12 @@ $(document).ready(function() {
     
     // ========== INITIALISATION ==========
     
-    // Obtenir et afficher les dates
+    // Obtenir et afficher la date d'aujourd'hui
     var todayDate = getTodayDate();
-    var tomorrowDate = getTomorrowDate();
-    
-    // Initialiser les filtres de date
     $('#filter_start_date').val(todayDate);
-    $('#filter_end_date').val(tomorrowDate);
+    $('#filter_end_date').val(todayDate);
     
-    console.log("Initialisation avec dates:", {
-        start: todayDate,
-        end: tomorrowDate
-    });
+    console.log("Initialisation avec date:", todayDate);
     
     // ========== DATATABLE CONFIGURATION ==========
     
@@ -360,14 +344,14 @@ $(document).ready(function() {
                 var terminalSn = $('#filter_terminal_sn').val();
                 var empCode = $('#filter_emp_code').val();
                 
-                // Si les dates sont vides, utiliser aujourd'hui et demain
+                // Si les dates sont vides, utiliser aujourd'hui
                 if (!startDate || startDate.trim() === '') {
                     startDate = todayDate;
                     $('#filter_start_date').val(todayDate);
                 }
                 if (!endDate || endDate.trim() === '') {
-                    endDate = tomorrowDate;
-                    $('#filter_end_date').val(tomorrowDate);
+                    endDate = todayDate;
+                    $('#filter_end_date').val(todayDate);
                 }
                 
                 // Envoyer les filtres au serveur
@@ -508,8 +492,8 @@ $(document).ready(function() {
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/French.json"
         },
-        pageLength: 500,
-        lengthMenu: [[10, 25, 50, 100, 500, -1], [10, 25, 50, 100, 500, "Tous"]],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tous"]],
         order: [[0, 'desc']],
         responsive: true,
         drawCallback: function(settings) {
@@ -680,7 +664,7 @@ $(document).ready(function() {
     $('#today_button').on('click', function() {
         // Réinitialiser tous les filtres
         $('#filter_start_date').val(todayDate);
-        $('#filter_end_date').val(tomorrowDate);
+        $('#filter_end_date').val(todayDate);
         $('#filter_terminal_sn').val('all');
         $('#filter_emp_code').val('all');
         
@@ -805,8 +789,6 @@ $(document).ready(function() {
     console.log('Application de pointage initialisée');
     console.log('URL API:', '{{ route("daily-attendance.data") }}');
     console.log('Date initiale:', todayDate);
-    console.log('Date de fin initiale (demain):', tomorrowDate);
-    console.log('Pagination: 500 lignes par page');
 });
 </script>
 

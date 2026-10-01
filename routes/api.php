@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CheckTimeController;
 use App\Http\Controllers\BiometricController;
+use App\Http\Controllers\EmailController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,3 +79,10 @@ Route::get('/checktime/transactions', [CheckTimeController::class, 'getTransacti
 
 
 
+Route::prefix('email')->group(function () {
+    Route::post('/send-simple', [EmailController::class, 'sendSimple']);
+    Route::post('/send-with-attachment', [EmailController::class, 'sendWithAttachment']);
+    Route::post('/send-with-local-file', [EmailController::class, 'sendWithLocalFile']);
+    Route::post('/send-with-url-attachment', [EmailController::class, 'sendWithUrlAttachment']);
+    Route::post('/send-multiple-attachments', [EmailController::class, 'sendWithMultipleAttachments']);
+});

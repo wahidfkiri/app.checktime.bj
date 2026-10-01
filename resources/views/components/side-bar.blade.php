@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-center align-items-center">
         <div class="logo">
           <a href="{{route('dashboard')}}">
-            <img src="{{asset('logo.jpg')}}" alt="Logo" srcset="" style="width: 150px; height: 100px;">
+            <img src="{{asset('public/logo.jpeg')}}" alt="Logo" srcset="" style=" height: 100px;">
           </a>
         </div>
         <div class="sidebar-toggler x">
@@ -144,6 +144,7 @@
           </ul>
         </li>
 
+       
        <!-- Gestion des Présences avec sous-menu -->
 <li class="sidebar-item has-sub @if(request()->routeIs('admin.daily-attendance.*')) active @endif">
     <a href="#" class="sidebar-link">
@@ -185,27 +186,33 @@
     </ul>
 </li>
 
-<!-- Rapports des Présences (inchangé) -->
-<li class="sidebar-item has-sub @if(request()->routeIs('reports.*')) active @endif">
-    <a href="#" class="sidebar-link">
-        <i class="bi bi-bar-chart-fill"></i>
-        <span>Rapports des Présences</span>
-    </a>
-    <ul class="submenu @if(request()->routeIs('reports.*')) active @endif">
-        <li class="submenu-item @if(request()->routeIs('reports.absences-delays')) active @endif">
-            <a href="{{ route('reports.absences-delays') }}">
+        <!-- Rapports des Présences -->
+        <li class="sidebar-item has-sub @if(request()->routeIs('reports.*')) active @endif">
+          <a href="#" class="sidebar-link">
+            <i class="bi bi-bar-chart-fill"></i>
+            <span>Rapports des Présences</span>
+          </a>
+          <ul class="submenu @if(request()->routeIs('reports.*')) active @endif">
+            <!-- <li class="submenu-item @if(request()->routeIs('reports.attendance')) active @endif">
+              <a href="{{route('reports.attendance')}}">
+                <i class="bi bi-calendar-month"></i>
+                <span>Rapport mensuel</span>
+              </a>
+            </li> -->
+            <li class="submenu-item @if(request()->routeIs('reports.absences-delays')) active @endif">
+              <a href="{{route('admin.reports.absences-delays')}}">
                 <i class="bi bi-exclamation-triangle"></i>
                 <span>État de pointage <br>(arrivées – départs)</span>
-            </a>
-        </li>
-        <li class="submenu-item @if(request()->routeIs('reports.custom.presence')) active @endif">
-            <a href="{{ route('reports.custom.presence') }}">
+              </a>
+            </li>
+            <li class="submenu-item @if(request()->routeIs('reports.custom.presence')) active @endif">
+              <a href="{{route('reports.custom.presence')}}">
                 <i class="bi bi-funnel"></i>
-                <span>Rapport d'assiduité et de ponctualité</span>
-            </a>
+                <span>Rapport d’assiduité et de ponctualité</span>
+              </a>
+            </li>
+          </ul>
         </li>
-    </ul>
-</li>
 
         <!-- Appareils (existant) -->
         <li class="sidebar-item @if(request()->routeIs('devices.*')) active @endif">

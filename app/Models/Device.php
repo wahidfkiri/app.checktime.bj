@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Device extends Model
 {
-    protected $fillable = ['client_id','device_sn','ip','alias','terminal_name','area_name','last_sync'];
+    protected $fillable = ['client_id','device_sn','ip','alias','terminal_name','area_name','last_sync','last_synced_at'];
  
     protected $casts = [
         'alias' => 'encrypted',

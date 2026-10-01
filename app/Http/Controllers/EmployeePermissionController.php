@@ -34,7 +34,15 @@ class EmployeePermissionController extends Controller
                     return $permission->employee->first_name . ' ' . $permission->employee->last_name;
                 })
                 ->addColumn('date_formatted', function($permission) {
-                    return $permission->date->format('d/m/Y');
+                    $start = $permission->getEffectiveStartDate();
+                    $end = $permission->getEffectiveEndDate();
+                    $startStr = Carbon::parse($start)->format('d/m/Y');
+                    $endStr = $end ? Carbon::parse($end)->format('d/m/Y') : $startStr;
+
+                    // Une seule journée : afficher une seule date ; sinon la plage.
+                    return $startStr === $endStr
+                        ? $startStr
+                        : $startStr . ' → ' . $endStr;
                 })
                 ->addColumn('time_range', function($permission) {
                     if ($permission->start_time && $permission->end_time) {
@@ -114,7 +122,8 @@ class EmployeePermissionController extends Controller
     {
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'date' => 'required|date',
+            'date_debut' => 'required|date',
+            'date_fin' => 'required|date|after_or_equal:date_debut',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
             'raison' => 'required|string|min:10|max:1000',
@@ -128,12 +137,15 @@ class EmployeePermissionController extends Controller
             $permission = EmployeePermission::create([
                 'client_id' => $client->id,
                 'employee_id' => $request->employee_id,
-                'date' => $request->date,
+                'date_debut' => $request->date_debut,
+                'date_fin' => $request->date_fin,
+                // `date` conservé (= début) pour la rétro-compatibilité.
+                'date' => $request->date_debut,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
                 'raison' => $request->raison,
-                'duration_minutes' => $request->duration_minutes ?? 
-                    ($request->start_time && $request->end_time ? 
+                'duration_minutes' => $request->duration_minutes ??
+                    ($request->start_time && $request->end_time ?
                         Carbon::parse($request->start_time)->diffInMinutes(Carbon::parse($request->end_time)) : null),
                 'status' => 'pending',
             ]);
@@ -211,7 +223,8 @@ class EmployeePermissionController extends Controller
 
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
-            'date' => 'required|date',
+            'date_debut' => 'required|date',
+            'date_fin' => 'required|date|after_or_equal:date_debut',
             'start_time' => 'nullable|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after_or_equal:start_time',
             'raison' => 'required|string|min:10|max:1000',
@@ -223,12 +236,15 @@ class EmployeePermissionController extends Controller
 
             $employeePermission->update([
                 'employee_id' => $request->employee_id,
-                'date' => $request->date,
+                'date_debut' => $request->date_debut,
+                'date_fin' => $request->date_fin,
+                // `date` conservé (= début) pour la rétro-compatibilité.
+                'date' => $request->date_debut,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
                 'raison' => $request->raison,
-                'duration_minutes' => $request->duration_minutes ?? 
-                    ($request->start_time && $request->end_time ? 
+                'duration_minutes' => $request->duration_minutes ??
+                    ($request->start_time && $request->end_time ?
                         Carbon::parse($request->start_time)->diffInMinutes(Carbon::parse($request->end_time)) : null),
                 'status' => 'pending', // Remettre en attente si modifié
                 'approved_by' => null,
@@ -383,11 +399,11 @@ class EmployeePermissionController extends Controller
         $query->where('client_id', $client->id);
 
         if ($request->start_date) {
-            $query->where('date', '>=', $request->start_date);
+            $query->whereRaw('COALESCE(date_fin, `date`) >= ?', [$request->start_date]);
         }
 
         if ($request->end_date) {
-            $query->where('date', '<=', $request->end_date);
+            $query->whereRaw('COALESCE(date_debut, `date`) <= ?', [$request->end_date]);
         }
 
         $total = $query->count();
@@ -475,11 +491,11 @@ class EmployeePermissionController extends Controller
             }
             
             if ($request->filled('date')) {
-                $query->where('date', $request->date);
+                $query->overlappingPeriod($request->date, $request->date);
             }
-            
+
             if ($request->filled('start_date') && $request->filled('end_date')) {
-                $query->whereBetween('date', [$request->start_date, $request->end_date]);
+                $query->overlappingPeriod($request->start_date, $request->end_date);
             }
             
             $permissions = $query->orderBy('date', 'desc')->get();

@@ -73,7 +73,7 @@
 <body>
     <div class="forgot-card">
         <div class="logo">
-            <img src="{{ asset('logo.jpg') }}" alt="Logo">
+            <img src="{{ asset('public/logo.jpg') }}" alt="Logo">
         </div>
         
         <h2 class="text-center mb-4">Mot de passe oublié</h2>

@@ -86,6 +86,41 @@ class ReportController extends Controller
             $totalRecords = count($allData);
             $start = (int) $request->input('start', 0);
             $length = (int) $request->input('length', 25);
+
+            // RÃ©sumÃ© global : calculÃ© sur tout le dataset filtrÃ©
+            $summary = [
+                'present' => 0,
+                'late' => 0,
+                'absent' => 0,
+                'leave' => 0,
+                'permission' => 0,
+                'total_days' => 0,
+            ];
+
+            if ($totalRecords > 0) {
+                $summary['total_days'] = count(array_unique(array_column($allData, 'date')));
+
+                foreach ($allData as $row) {
+                    $status = $row['status'] ?? null;
+
+                    if ($status === 'present') {
+                        if (($row['late_minutes'] ?? 0) > 0 || ($row['is_late'] ?? false)) {
+                            $summary['late']++;
+                        } else {
+                            $summary['present']++;
+                        }
+                        continue;
+                    }
+
+                    if ($status === 'absent') {
+                        $summary['absent']++;
+                    } elseif ($status === 'leave') {
+                        $summary['leave']++;
+                    } elseif ($status === 'permission') {
+                        $summary['permission']++;
+                    }
+                }
+            }
             
             $pageData = array_slice($allData, $start, $length);
             
@@ -93,7 +128,8 @@ class ReportController extends Controller
                 'draw' => (int) $request->input('draw', 1),
                 'recordsTotal' => $totalRecords,
                 'recordsFiltered' => $totalRecords,
-                'data' => $pageData
+                'data' => $pageData,
+                'summary' => $summary
             ]);
             
         } catch (\Exception $e) {
@@ -128,7 +164,7 @@ class ReportController extends Controller
         // Récupérer les permissions approuvées pour la période
         $permissions = EmployeePermission::where('client_id', $clientId)
             ->where('status', 'approved')
-            ->whereBetween('date', [$startDate, $endDate])
+            ->overlappingPeriod($startDate, $endDate)
             ->get()
             ->groupBy('employee_id');
         
@@ -538,7 +574,8 @@ if ($isOnMission) {
     {
         if (isset($permissions[$employeeId])) {
             foreach ($permissions[$employeeId] as $permission) {
-                if (Carbon::parse($permission->date)->format('Y-m-d') == $date) {
+                // Prend en compte la plage de dates (date_debut → date_fin).
+                if ($permission->coversDate($date)) {
                     return true;
                 }
             }

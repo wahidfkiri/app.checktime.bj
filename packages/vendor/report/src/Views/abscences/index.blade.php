@@ -584,18 +584,15 @@ $(document).ready(function() {
                         return [];
                     }
                     
-                    if (json.data) {
-                        // Si le backend renvoie les totaux, les utiliser
-                        if (json.summary) {
-                            updateReportSummaryFromBackend(json.summary);
-                        } else {
-                            // Sinon, utiliser les données de la page (pas idéal)
-                            updateReportSummary(json.data);
-                        }
-                        return json.data;
+                    // Résumé toujours global: on utilise uniquement le summary backend
+                    if (json.summary) {
+                        updateReportSummaryFromBackend(json.summary);
+                    } else {
+                        // Ne pas recalculer sur la page paginée
+                        $('#report-summary').addClass('d-none');
                     }
-                    
-                    return [];
+
+                    return Array.isArray(json.data) ? json.data : [];
                 }
             },
             columns: [

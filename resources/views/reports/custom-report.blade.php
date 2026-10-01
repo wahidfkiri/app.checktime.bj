@@ -36,17 +36,18 @@
                                             @csrf
                                             <input type="hidden" name="start_date" id="pdf_by_dept_start_date">
                                             <input type="hidden" name="end_date" id="pdf_by_dept_end_date">
+                                            <input type="hidden" name="emp_code" id="pdf_by_dept_emp_code">
                                         </form>
                                         
                                         <div class="row g-3">
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label for="report_start_date" class="form-label">Date début</label>
                                                     <input type="date" class="form-control" id="report_start_date" 
                                                            value="{{ date('Y-m-d', strtotime('-1 days')) }}">
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label for="report_end_date" class="form-label">Date fin</label>
                                                     <input type="date" class="form-control" id="report_end_date" 
@@ -54,6 +55,19 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="report_departments" class="form-label">Département(s)</label>
+                                                    <select class="form-control" id="report_departments" multiple style="height: auto; min-height: 38px;">
+                                                        <option value="all" selected>Tous les départements</option>
+                                                        @foreach($departments as $deptName)
+                                                            <option value="{{ $deptName }}">
+                                                                {{ $deptName }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label for="report_emp_code" class="form-label">Employé</label>
                                                     <select class="form-control" id="report_emp_code">
@@ -73,11 +87,11 @@
                                                         <button type="button" class="btn btn-primary" id="generate_report">
                                                             <i class="bi bi-file-earmark-text me-1"></i> Générer
                                                         </button>
-                                                        <button type="button" class="btn btn-danger" id="export_pdf">
+                                                        <button type="button" class="btn btn-danger d-none" id="export_pdf">
                                                             <i class="bi bi-file-pdf me-1"></i> Exporter PDF
                                                         </button>
                                                         <button type="button" class="btn btn-danger" id="export_dept_pdf">
-                                                            <i class="bi bi-file-pdf me-1"></i> Exporter PDF Département
+                                                            <i class="bi bi-file-pdf me-1"></i> Exporter PDF
                                                         </button>
                                                     </div>
                                                 </div>
@@ -207,6 +221,7 @@
                             <thead class="table-dark">
                                  <tr>
                                     <th rowspan="2" class="text-center align-middle">N° d'ordre</th>
+                                    <th rowspan="2" class="text-center align-middle">Département</th>
                                     <th rowspan="2" class="text-center align-middle">Nom et Prénoms</th>
                                     <th colspan="4" class="text-center">PRÉSENCE AU POSTE</th>
                                     <th colspan="3" class="text-center">PONCTUALITÉ</th>
@@ -378,7 +393,7 @@ $(document).ready(function() {
         
         // Restaurer les textes originaux des boutons
         $('#export_pdf').prop('disabled', false).html($('#export_pdf').data('original-text') || '<i class="bi bi-file-pdf me-1"></i> Exporter PDF');
-        $('#export_dept_pdf').prop('disabled', false).html($('#export_dept_pdf').data('original-text') || '<i class="bi bi-file-pdf me-1"></i> Exporter PDF Département');
+        $('#export_dept_pdf').prop('disabled', false).html($('#export_dept_pdf').data('original-text') || '<i class="bi bi-file-pdf me-1"></i> Exporter PDF');
         
         $('#pdf-loading-alert').addClass('d-none');
         $('#pdf-progress-container').addClass('d-none');
@@ -653,6 +668,9 @@ $(document).ready(function() {
                 '<tr>' +
                 '<td class="text-center fw-bold">' + (index + 1) + '</td>' +
                 '<td>' + 
+                    '<span class="badge bg-info">' + (employee.department_name || 'Non défini') + '</span>' +
+                '</td>' +
+                '<td>' + 
                     '<div class="fw-bold">' + (employee.employee_name || 'N/A') + '</div>' +
                     '<small class="text-muted">Code: ' + (employee.employee_code || 'N/A') + '</small>' +
                 '</td>' +
@@ -694,7 +712,7 @@ $(document).ready(function() {
         
         var footerRow = 
             '<tr class="table-active">' +
-            '<td colspan="2" class="text-end fw-bold">TOTAUX / MOYENNES :</td>' +
+            '<td colspan="3" class="text-end fw-bold">TOTAUX / MOYENNES :</td>' +
             '<td class="text-center fw-bold text-success">' + totalPresence + '</td>' +
             '<td class="text-center fw-bold text-danger">' + totalAbsence + '</td>' +
             '<td class="text-center">' +
@@ -714,6 +732,27 @@ $(document).ready(function() {
         updateReportSummary(sortedData);
     }
     
+    // Récupérer les départements sélectionnés
+    function getSelectedDepartments() {
+        var selectedValues = $('#report_departments').val();
+        if (!selectedValues || selectedValues.length === 0 || selectedValues.includes('all')) {
+            return ['all'];
+        }
+        return selectedValues;
+    }
+
+    // Injecter les départements sélectionnés en champs cachés department_ids[] dans un formulaire
+    function setDepartmentInputs(form, departments) {
+        form.find('input[name="department_ids[]"]').remove();
+        (departments || []).forEach(function(dept) {
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'department_ids[]',
+                value: dept
+            }).appendTo(form);
+        });
+    }
+    
     // ========== GÉNÉRATION DU RAPPORT ==========
     
     function generateReport() {
@@ -727,6 +766,7 @@ $(document).ready(function() {
         var startDate = $('#report_start_date').val();
         var endDate = $('#report_end_date').val();
         var empCode = $('#report_emp_code').val();
+        var selectedDepartments = getSelectedDepartments();
         
         var daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
         var details = 'Analyse de ' + daysDiff + ' jours (du ' + startDate + ' au ' + endDate + ')';
@@ -753,7 +793,8 @@ $(document).ready(function() {
                 _token: "{{ csrf_token() }}",
                 start_date: startDate,
                 end_date: endDate,
-                emp_code: empCode
+                emp_code: empCode,
+                department_ids: selectedDepartments
             },
             success: function(response) {
                 clearInterval(progressInterval);
@@ -826,6 +867,7 @@ $(document).ready(function() {
                 $('#pdf_start_date').val(startDate);
                 $('#pdf_end_date').val(endDate);
                 $('#pdf_emp_code').val(empCode);
+                setDepartmentInputs($('#exportPdfForm'), getSelectedDepartments());
                 $('#exportPdfForm').submit();
                 
                 setTimeout(function() {
@@ -891,6 +933,8 @@ $(document).ready(function() {
                 
                 $('#pdf_by_dept_start_date').val(startDate);
                 $('#pdf_by_dept_end_date').val(endDate);
+                $('#pdf_by_dept_emp_code').val($('#report_emp_code').val());
+                setDepartmentInputs($('#exportPdfByDeptForm'), getSelectedDepartments());
                 $('#exportPdfByDeptForm').submit();
                 
                 setTimeout(function() {

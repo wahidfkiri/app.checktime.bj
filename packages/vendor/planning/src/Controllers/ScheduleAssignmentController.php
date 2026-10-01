@@ -918,7 +918,6 @@ public function exportPdf(Request $request)
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('planning::schedules.export', $data)
             ->setPaper('A4', $orientation);
             
-            
         $filename = 'planning-' . $startDate->format('Y-m-d') . '-au-' . $endDate->format('Y-m-d') . '.pdf';
         
         \Log::info('=== PDF EXPORT COMPLETED ===');

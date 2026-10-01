@@ -206,6 +206,7 @@ class DeviceController extends Controller
                 'terminal_name' => $deviceData['terminal_name'] ?? null,
                 'area_name' => $deviceData['area_name'] ?? null,
                 'last_sync' => $deviceData['last_activity'] ?? null,
+                'last_synced_at' => now(),
                 'metadata' => json_encode($deviceData),
                 'updated_at' => now(),
             ];
@@ -325,19 +326,21 @@ class DeviceController extends Controller
                     }
                 })
                 ->addColumn('last_sync', function($device) {
-                    if (!$device->last_sync) {
+                    // Affiche la date de la dernière synchronisation réelle
+                    // (enregistrée à chaque sync : chargement de page ou bouton Synchroniser)
+                    if (!$device->last_synced_at) {
                         return '<span class="text-muted">Jamais</span>';
                     }
-                    
-                    $daysAgo = \Carbon\Carbon::parse($device->last_sync)->diffInDays(now());
-                    $formattedDate = \Carbon\Carbon::parse($device->last_sync)->format('d/m/Y H:i:s');
-                    
+
+                    $daysAgo = \Carbon\Carbon::parse($device->last_synced_at)->diffInDays(now());
+                    $formattedDate = \Carbon\Carbon::parse($device->last_synced_at)->format('d/m/Y H:i:s');
+
                     if ($daysAgo == 0) {
                         return '<span class="text-success">Aujourd\'hui</span><br>
-                                <small class="text-muted">' . \Carbon\Carbon::parse($device->last_sync)->format('H:i:s') . '</small>';
+                                <small class="text-muted">' . \Carbon\Carbon::parse($device->last_synced_at)->format('H:i:s') . '</small>';
                     } elseif ($daysAgo == 1) {
                         return '<span class="text-success">Hier</span><br>
-                                <small class="text-muted">' . \Carbon\Carbon::parse($device->last_sync)->format('H:i:s') . '</small>';
+                                <small class="text-muted">' . \Carbon\Carbon::parse($device->last_synced_at)->format('H:i:s') . '</small>';
                     } elseif ($daysAgo <= 15) {
                         return '<span>' . $formattedDate . '</span><br>
                                 <small class="text-success">Il y a ' . $daysAgo . ' jour(s)</small>';

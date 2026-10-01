@@ -226,6 +226,8 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+
+// Script complet à remplacer
 <script>
 $(document).ready(function() {
     // Variables
@@ -1082,6 +1084,7 @@ $(document).ready(function() {
     });
 });
 </script>
+
 <style>
     .card-header { background-color: #f8f9fa; }
     .table th { background-color: #f8f9fa; font-weight: 600; }

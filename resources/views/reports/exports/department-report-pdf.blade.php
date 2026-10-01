@@ -329,7 +329,7 @@
     <!-- Pied de page -->
     <div class="footer">
         <span class="page-number"></span> | 
-        Rapport généré par le logiciel CHECKTIME le {{ $export_date->format('d/m/Y à H:i') }}
+        Rapport généré le {{ $export_date->format('d/m/Y à H:i') }} par le système CHECKTIME - Tél: 0141555592.
     </div>
 </body>
 </html>
