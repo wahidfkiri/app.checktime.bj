@@ -28,10 +28,11 @@ class CheckClientActive
 
         // Get the authenticated user
         $user = Auth::user();
-        
-        // Find the client associated with this user
-        $client = Client::where('user_id', $user->id)->first();
-        
+
+        // Résout le client courant : client propriétaire, ou client sélectionné
+        // par un super-admin (impersonation). Centralisé dans CurrentClient.
+        $client = \App\Support\CurrentClient::get();
+
         // Check if client exists and is active
         if (!$client) {
             return response()->json([

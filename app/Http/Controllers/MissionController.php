@@ -19,7 +19,7 @@ class MissionController extends Controller
     public function index(Request $request)
     {
         // Récupérer le client de l'utilisateur connecté
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             if ($request->ajax()) {
@@ -142,7 +142,7 @@ class MissionController extends Controller
     public function store(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -199,7 +199,7 @@ class MissionController extends Controller
     public function show($id)
     {
         try {
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -260,7 +260,7 @@ class MissionController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -319,7 +319,7 @@ class MissionController extends Controller
     public function destroy($id)
     {
         try {
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -361,7 +361,7 @@ class MissionController extends Controller
      */
     public function generateReference()
     {
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return response()->json(['reference' => null], 404);

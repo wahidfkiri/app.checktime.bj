@@ -16,7 +16,7 @@ class SignataireController extends Controller
 {
     private function currentClient(): ?Client
     {
-        return Client::where('user_id', auth()->user()->id)->first();
+        return \App\Support\CurrentClient::get();
     }
 
     /**

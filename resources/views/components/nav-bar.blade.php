@@ -77,6 +77,17 @@
                     <li>
                       <h6 class="dropdown-header">Bonjour, {{auth()->user()->name}}!</h6>
                     </li>
+                    @role('super-admin')
+                    <li>
+                      <a class="dropdown-item" href="{{ route('admin.clients.index') }}"><i class="icon-mid bi bi-people me-2"></i> Administration</a>
+                    </li>
+                    @if(\App\Support\CurrentClient::isImpersonating())
+                    <li>
+                      <a class="dropdown-item text-warning" href="{{ route('admin.clients.release') }}"><i class="icon-mid bi bi-box-arrow-left me-2"></i> Quitter le client</a>
+                    </li>
+                    @endif
+                    <li><hr class="dropdown-divider"></li>
+                    @endrole
                     <li>
                       <a class="dropdown-item" href="{{ route('profile') }}"><i class="icon-mid bi bi-person me-2"></i> Mon
                         Profil</a>

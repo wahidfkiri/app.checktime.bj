@@ -21,7 +21,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Récupérer le client de l'utilisateur connecté
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         // Si l'utilisateur n'a pas de client associé
         if (!$client) {
@@ -456,7 +456,7 @@ class DashboardController extends Controller
     public function getStatsJson()
     {
         // Récupérer le client de l'utilisateur connecté
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return response()->json([
@@ -517,10 +517,14 @@ class DashboardController extends Controller
 
     public function getClientDetails($clientId)
     {
-        // Vérifier que l'utilisateur a accès à ce client
-        $client = Client::where('id', $clientId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
+        // Vérifier que l'utilisateur a accès à ce client (son propre client,
+        // ou le client sélectionné par un super-admin). On s'appuie sur le
+        // contexte courant plutôt que sur user_id pour gérer l'impersonation.
+        $current = \App\Support\CurrentClient::get();
+        if (!$current || (string) $current->id !== (string) $clientId) {
+            abort(403);
+        }
+        $client = $current;
 
         $today = Carbon::today();
         

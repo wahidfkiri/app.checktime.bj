@@ -21,7 +21,7 @@ class ScheduleAssignmentController extends Controller
      */
     public function calendar(Request $request)
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         // Récupérer les données pour le calendrier
         $employees = Employee::where('client_id', $client->id)
@@ -54,7 +54,7 @@ class ScheduleAssignmentController extends Controller
      */
     public function massAssignForm(Request $request)
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         $employees = Employee::where('client_id', $client->id)
            // ->where('is_active', true)
@@ -80,7 +80,7 @@ class ScheduleAssignmentController extends Controller
     public function getCellData(Request $request)
 {
     try {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return response()->json([
@@ -192,7 +192,7 @@ class ScheduleAssignmentController extends Controller
     public function getSchedules(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             // $validated = $request->validate([
             //     'start_date' => 'required|date',
@@ -262,7 +262,7 @@ class ScheduleAssignmentController extends Controller
         try {
             DB::beginTransaction();
             
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'employee_id' => 'required|exists:employees,id',
@@ -348,7 +348,7 @@ class ScheduleAssignmentController extends Controller
         try {
             DB::beginTransaction();
             
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'employee_ids' => 'required|array',
@@ -499,7 +499,7 @@ class ScheduleAssignmentController extends Controller
     public function removeSchedule(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'employee_id' => 'required|exists:employees,id',
@@ -545,7 +545,7 @@ class ScheduleAssignmentController extends Controller
     public function export(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'start_date' => 'required|date',
@@ -681,7 +681,7 @@ class ScheduleAssignmentController extends Controller
         try {
             DB::beginTransaction();
             
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'month' => 'required|integer|min:1|max:12',

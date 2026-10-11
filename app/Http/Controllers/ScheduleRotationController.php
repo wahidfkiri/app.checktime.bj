@@ -16,7 +16,7 @@ class ScheduleRotationController extends Controller
      */
     public function index(Request $request)
     {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
         if ($request->ajax()) {
             
            $query = ScheduleRotation::with([
@@ -113,7 +113,7 @@ class ScheduleRotationController extends Controller
     public function store(Request $request)
     {
         try {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
             
             $validated = $request->validate([
                 'employee_id' => 'required|exists:employees,id',
@@ -163,7 +163,7 @@ class ScheduleRotationController extends Controller
     public function edit(ScheduleRotation $scheduleRotation)
     {
         try {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
             
             if ($scheduleRotation->client_id != $client->id) {
                 return response()->json([
@@ -191,7 +191,7 @@ class ScheduleRotationController extends Controller
     public function update(Request $request, ScheduleRotation $scheduleRotation)
     {
         try {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
             
             if ($scheduleRotation->client_id != $client->id) {
                 return response()->json([
@@ -242,7 +242,7 @@ class ScheduleRotationController extends Controller
     public function destroy(ScheduleRotation $scheduleRotation)
     {
         try {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
             
             if ($scheduleRotation->client_id != $client->id) {
                 return response()->json([
@@ -272,7 +272,7 @@ class ScheduleRotationController extends Controller
     public function generateNextRotations(Request $request)
     {
         try {
-           $client = Client::where('user_id', auth()->user()->id)->first();
+           $client = \App\Support\CurrentClient::get();
             $rotations = ScheduleRotation::where('client_id', $client->id)
                 ->where('is_active', true)
                 ->where('is_recurring', true)

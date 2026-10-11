@@ -10,6 +10,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\Admin\ClientAdminController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\WorkHourController;
 use App\Http\Controllers\ScheduleController;
@@ -67,16 +68,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('guest');
 });
 
-Route::middleware(['auth','web', 'role:client','client.active'])->group(function () {
+Route::middleware(['auth','web', 'role:super-admin|client','client.active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/dashboard/stats', [DashboardController::class, 'getStatsJson'])->name('super-admin.stats');
     Route::get('/client/{client}/details', [DashboardController::class, 'getClientDetails'])->name('client.details');
 Route::get('/api/weekly-stats', [DashboardController::class, 'getWeeklyStats'])->name('api.weekly-stats');
-    Route::get('/admin/clients', function () {
-        return view('clients.index');
-    })->name('admin.clients');
-
     // Route principale pour afficher la liste (avec DataTable)
     Route::get('/clients', [ClientController::class, 'index'])
         ->name('clients.index');
@@ -246,3 +243,33 @@ Route::middleware(['auth','web'])->group(function () {
 
 
 
+
+/*
+|--------------------------------------------------------------------------
+| Espace super-admin
+|--------------------------------------------------------------------------
+| Réservé au rôle super-admin. Ces routes ne passent pas par `client.active` :
+| le super-admin y accède justement pour piloter les clients, y compris
+| inactifs. La création/modification réutilise le ClientController existant.
+*/
+Route::middleware(['web', 'auth', 'role:super-admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/clients', [ClientAdminController::class, 'index'])->name('clients.index');
+
+        // Création / modification : réutilisent le ClientController existant.
+        Route::get('/clients/datatable', [ClientController::class, 'datatable'])->name('clients.datatable');
+        Route::get('/clients/check-rccm', [ClientController::class, 'checkRccm'])->name('clients.check-rccm');
+        Route::post('/clients', [ClientController::class, 'store'])->name('clients.store');
+        Route::get('/clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+        Route::put('/clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+
+        // Actions propres au super-admin.
+        Route::get('/clients/{id}/entrer', [ClientAdminController::class, 'select'])->name('clients.select');
+        Route::get('/clients/quitter', [ClientAdminController::class, 'release'])->name('clients.release');
+        Route::post('/clients/{id}/toggle-status', [ClientAdminController::class, 'toggleStatus'])->name('clients.toggle');
+        Route::post('/clients/{id}/mot-de-passe', [ClientAdminController::class, 'resetPassword'])->name('clients.password');
+        Route::get('/clients/{id}/impact-suppression', [ClientAdminController::class, 'deletionImpact'])->name('clients.impact');
+        Route::delete('/clients/{id}', [ClientAdminController::class, 'destroy'])->name('clients.destroy');
+    });

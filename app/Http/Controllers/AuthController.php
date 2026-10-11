@@ -38,9 +38,31 @@ public function login(Request $request)
 
         $user = Auth::user();
 
-        
+        // Super-admin : pas de fiche client propre. Il accède à l'espace
+        // d'administration et choisit ensuite le client dans lequel travailler.
+        if ($user->hasRole('super-admin')) {
+            \App\Support\CurrentClient::clear(); // repartir sans contexte client
+            $request->session()->regenerate();
+
+            return response()->json([
+                'success' => true,
+                'redirect' => route('admin.clients.index'),
+                'message' => 'Connexion réussie!'
+            ]);
+        }
+
         // Check if user has a client record and if it's active
         $client = Client::where('user_id', $user->id)->first();
+
+        // Compte sans fiche client et sans rôle super-admin : accès refusé
+        // (évite aussi l'erreur sur $client->is_active quand $client est null).
+        if (!$client) {
+            Auth::logout();
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'êtes pas autorisé à vous connecter ici.'
+            ], 403);
+        }
 
         if (!$client->is_active) {
             Auth::logout();
@@ -82,6 +104,7 @@ public function login(Request $request)
 
     public function logout(Request $request)
     {
+        \App\Support\CurrentClient::clear(); // purge le contexte client éventuel
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

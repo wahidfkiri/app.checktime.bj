@@ -24,7 +24,7 @@ class DeviceController extends Controller
     public function index(Request $request)
     {
         // Récupérer le client de l'utilisateur connecté
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         // Si l'utilisateur n'a pas de client associé
         if (!$client) {
@@ -280,7 +280,7 @@ class DeviceController extends Controller
     {
         if ($request->ajax()) {
             // Récupérer le client de l'utilisateur connecté
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return DataTables::of([])->make(true);
@@ -413,7 +413,7 @@ class DeviceController extends Controller
     {
         try {
             // Récupérer le client de l'utilisateur connecté
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -455,7 +455,7 @@ class DeviceController extends Controller
     public function syncStatus()
     {
         // Récupérer le client de l'utilisateur connecté
-        $client = Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return response()->json([
@@ -486,7 +486,7 @@ class DeviceController extends Controller
     {
         try {
             // Récupérer le client de l'utilisateur connecté
-            $client = Client::where('user_id', auth()->id())->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([

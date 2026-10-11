@@ -40,7 +40,7 @@ class BiometricController extends Controller
      */
     public function getBiometricVerification($id)
     {
-        $client = \App\Models\Client::where('user_id', auth()->id())->first();
+        $client = \App\Support\CurrentClient::get();
 
         if (!$client) {
             return response()->json([

@@ -27,7 +27,7 @@ class ReportController extends Controller
      */
     public function absencesDelays(Request $request)
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return redirect()->route('home')->with('error', 'Client non trouvé.');
@@ -55,7 +55,7 @@ class ReportController extends Controller
     public function getData(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json(['error' => 'Client non trouvé'], 404);
@@ -589,7 +589,7 @@ if ($isOnMission) {
     public function exportPdf(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return redirect()->back()->with('error', 'Client non trouvé.');
@@ -724,7 +724,7 @@ if ($isOnMission) {
     public function previewPdf(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json(['error' => 'Client non trouvé'], 404);
@@ -799,7 +799,7 @@ if ($isOnMission) {
     public function debugGetData(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json(['error' => 'Client non trouvé'], 404);

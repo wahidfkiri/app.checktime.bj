@@ -19,7 +19,7 @@ class EmployeePermissionController extends Controller
      */
     public function index(Request $request)
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($request->ajax()) {
             $query = EmployeePermission::with(['client', 'employee'])
                 ->select('employee_permissions.*');
@@ -131,7 +131,7 @@ class EmployeePermissionController extends Controller
         ]);
 
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             DB::beginTransaction();
 
             $permission = EmployeePermission::create([
@@ -173,7 +173,7 @@ class EmployeePermissionController extends Controller
     public function show(EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($employeePermission->client_id != $client->id) {
             return response()->json([
                 'success' => false,
@@ -193,7 +193,7 @@ class EmployeePermissionController extends Controller
     public function edit(EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($employeePermission->client_id != $client->id) {
             return response()->json([
                 'success' => false,
@@ -213,7 +213,7 @@ class EmployeePermissionController extends Controller
     public function update(Request $request, EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         // if ($employeePermission->client_id != $client->id) {
         //     return response()->json([
         //         'success' => false,
@@ -274,7 +274,7 @@ class EmployeePermissionController extends Controller
     public function destroy(EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         // if ($employeePermission->client_id != $client->id) {
         //     return response()->json([
         //         'success' => false,
@@ -304,7 +304,7 @@ class EmployeePermissionController extends Controller
     public function approve(Request $request, EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($employeePermission->client_id != $client->id) {
             return response()->json([
                 'success' => false,
@@ -347,7 +347,7 @@ class EmployeePermissionController extends Controller
     public function reject(Request $request, EmployeePermission $employeePermission)
     {
         // Vérifier que la permission appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($employeePermission->client_id != $client->id) {
             return response()->json([
                 'success' => false,
@@ -393,7 +393,7 @@ class EmployeePermissionController extends Controller
      */
     public function statistics(Request $request)
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         $query = EmployeePermission::query();
 
         $query->where('client_id', $client->id);
@@ -431,7 +431,7 @@ class EmployeePermissionController extends Controller
     public function byEmployee(Employee $employee)
     {
         // Vérifier que l'employé appartient au client de l'utilisateur
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         if ($employee->client_id != $client->id) {
             return response()->json([
                 'success' => false,
@@ -476,7 +476,7 @@ class EmployeePermissionController extends Controller
     public function export(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             $query = EmployeePermission::with(['employee'])
                 ->where('client_id', $client->id);
@@ -543,7 +543,7 @@ class EmployeePermissionController extends Controller
     private function getAppliedFilters(Request $request)
     {
         $filters = [];
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         if ($request->filled('employee_id')) {
             $employee = Employee::find($request->employee_id);

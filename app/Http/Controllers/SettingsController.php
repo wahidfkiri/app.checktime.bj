@@ -15,7 +15,7 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $client = Client::where('user_id', auth()->user()->id)->first();
+        $client = \App\Support\CurrentClient::get();
         
         if (!$client) {
             return redirect()->route('home')->with('error', 'Client non trouvé.');
@@ -33,7 +33,7 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -93,7 +93,7 @@ class SettingsController extends Controller
     public function testRhEmail(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -145,7 +145,7 @@ class SettingsController extends Controller
     public function testEmployeesEmail(Request $request)
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
@@ -211,7 +211,7 @@ class SettingsController extends Controller
     public function getStatus()
     {
         try {
-            $client = Client::where('user_id', auth()->user()->id)->first();
+            $client = \App\Support\CurrentClient::get();
             
             if (!$client) {
                 return response()->json([
