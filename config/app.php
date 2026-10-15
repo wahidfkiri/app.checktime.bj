@@ -200,7 +200,8 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        App\Providers\TelescopeServiceProvider::class,
+        // Telescope est un outil de dev : enregistré conditionnellement dans
+        // AppServiceProvider::register() (local uniquement), jamais en prod.
         App\Providers\SmsServiceProvider::class,
 
     ],
