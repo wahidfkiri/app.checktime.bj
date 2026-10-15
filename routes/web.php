@@ -12,6 +12,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\Admin\ClientAdminController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\WorkHourController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AbsenceController;
@@ -98,6 +100,25 @@ Route::prefix('leaves')->name('leaves.')->group(function () {
     Route::delete('/{id}', [LeaveController::class, 'destroy'])->name('destroy');
     Route::get('/datatable', [LeaveController::class, 'datatable'])->name('datatable');
     Route::put('/{id}/status', [LeaveController::class, 'updateStatus'])->name('status');
+});
+
+// Jours fériés (scopés client, protégés par permission:menu.holidays)
+Route::prefix('holidays')->name('holidays.')->middleware('permission:menu.holidays')->group(function () {
+    Route::get('/', [HolidayController::class, 'index'])->name('index');
+    Route::get('/datatable', [HolidayController::class, 'datatable'])->name('datatable');
+    Route::post('/', [HolidayController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [HolidayController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [HolidayController::class, 'update'])->name('update');
+    Route::delete('/{id}', [HolidayController::class, 'destroy'])->name('destroy');
+});
+
+// Types de congés (scopés client, protégés par permission:menu.leave-types)
+Route::prefix('leave-types')->name('leave-types.')->middleware('permission:menu.leave-types')->group(function () {
+    Route::get('/', [LeaveTypeController::class, 'index'])->name('index');
+    Route::post('/', [LeaveTypeController::class, 'store'])->name('store');
+    Route::put('/{id}', [LeaveTypeController::class, 'update'])->name('update');
+    Route::post('/{id}/toggle-status', [LeaveTypeController::class, 'toggleStatus'])->name('toggle');
+    Route::delete('/{id}', [LeaveTypeController::class, 'destroy'])->name('destroy');
 });
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

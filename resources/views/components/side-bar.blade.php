@@ -134,6 +134,15 @@
                 <span>Congés</span>
               </a>
             </li>
+            @can('menu.leave-types')
+            <!-- Types de congés -->
+            <li class="submenu-item @if(request()->routeIs('leave-types.*')) active @endif">
+              <a href="{{route('leave-types.index')}}">
+                <i class="bi bi-tags"></i>
+                <span>Types de congés</span>
+              </a>
+            </li>
+            @endcan
             <!-- Congés -->
             <!-- <li class="submenu-item @if(request()->routeIs('leaves.*')) active @endif">
               <a href="{{route('leaves.index')}}">
@@ -144,7 +153,16 @@
           </ul>
         </li>
 
-       
+        @can('menu.holidays')
+        <!-- Jours fériés -->
+        <li class="sidebar-item @if(request()->routeIs('holidays.*')) active @endif">
+          <a href="{{ route('holidays.index') }}" class="sidebar-link">
+            <i class="bi bi-calendar-event"></i>
+            <span>Jours fériés</span>
+          </a>
+        </li>
+        @endcan
+
        <!-- Gestion des Présences avec sous-menu -->
 <li class="sidebar-item has-sub @if(request()->routeIs('admin.daily-attendance.*')) active @endif">
     <a href="#" class="sidebar-link">
