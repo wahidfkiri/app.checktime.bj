@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ClientAdminController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveTypeController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\WorkHourController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AbsenceController;
@@ -70,7 +71,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('guest');
 });
 
-Route::middleware(['auth','web', 'role:super-admin|client','client.active'])->group(function () {
+Route::middleware(['auth','web', 'role:super-admin|client|client-user','client.active'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/dashboard/stats', [DashboardController::class, 'getStatsJson'])->name('super-admin.stats');
@@ -119,6 +120,15 @@ Route::prefix('leave-types')->name('leave-types.')->middleware('permission:menu.
     Route::put('/{id}', [LeaveTypeController::class, 'update'])->name('update');
     Route::post('/{id}/toggle-status', [LeaveTypeController::class, 'toggleStatus'])->name('toggle');
     Route::delete('/{id}', [LeaveTypeController::class, 'destroy'])->name('destroy');
+});
+
+// Gestion des utilisateurs (sous-comptes du client, protégés par permission:menu.users)
+Route::prefix('users')->name('users.')->middleware('permission:menu.users')->group(function () {
+    Route::get('/', [UserController::class, 'index'])->name('index');
+    Route::post('/', [UserController::class, 'store'])->name('store');
+    Route::get('/{id}', [UserController::class, 'show'])->name('show');
+    Route::put('/{id}', [UserController::class, 'update'])->name('update');
+    Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
 });
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');

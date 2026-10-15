@@ -91,7 +91,13 @@ class CurrentClient
             return $clientId ? Client::find($clientId) : null;
         }
 
-        // Client (et tout autre rôle historique) : son propre client.
+        // Compte rattaché à un client (admin principal OU sous-compte) :
+        // on privilégie users.client_id, avec repli sur clients.user_id pour
+        // les comptes historiques non encore rattachés.
+        if (!empty($user->client_id)) {
+            return Client::find($user->client_id);
+        }
+
         return Client::where('user_id', $user->id)->first();
     }
 }

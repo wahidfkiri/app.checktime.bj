@@ -19,10 +19,17 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'client_id',
         'name',
         'email',
         'password',
     ];
+
+    /** Client de rattachement (null pour un super-admin). */
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

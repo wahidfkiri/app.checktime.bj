@@ -51,12 +51,15 @@ public function login(Request $request)
             ]);
         }
 
-        // Check if user has a client record and if it's active
-        $client = Client::where('user_id', $user->id)->first();
+        // Résoudre le client rattaché : sous-compte (users.client_id) ou
+        // administrateur principal historique (clients.user_id).
+        $client = $user->client_id
+            ? Client::find($user->client_id)
+            : Client::where('user_id', $user->id)->first();
 
-        // Compte sans fiche client et sans rôle super-admin : accès refusé
-        // (évite aussi l'erreur sur $client->is_active quand $client est null).
-        if (!$client) {
+        // Seuls les comptes rattachés à un client (admin ou sous-compte) sont
+        // autorisés ici ; le super-admin a déjà été traité au-dessus.
+        if (!$client || !($user->hasRole('client') || $user->hasRole('client-user'))) {
             Auth::logout();
             return response()->json([
                 'success' => false,
@@ -74,15 +77,6 @@ public function login(Request $request)
                     'id' => $client->id,
                     'deactivated_at' => $client->deactivated_at // optional
                 ]
-            ], 403);
-        }
-
-        // Vérifier le rôle admin
-        if (!$user->hasRole('client')) {
-            Auth::logout(); // déconnecter l'utilisateur
-            return response()->json([
-                'success' => false,
-                'message' => 'Vous n\'êtes pas autorisé à vous connecter ici.'
             ], 403);
         }
 

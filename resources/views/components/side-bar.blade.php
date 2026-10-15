@@ -163,6 +163,16 @@
         </li>
         @endcan
 
+        @can('menu.users')
+        <!-- Utilisateurs -->
+        <li class="sidebar-item @if(request()->routeIs('users.*')) active @endif">
+          <a href="{{ route('users.index') }}" class="sidebar-link">
+            <i class="bi bi-people"></i>
+            <span>Utilisateurs</span>
+          </a>
+        </li>
+        @endcan
+
        <!-- Gestion des Présences avec sous-menu -->
 <li class="sidebar-item has-sub @if(request()->routeIs('admin.daily-attendance.*')) active @endif">
     <a href="#" class="sidebar-link">
