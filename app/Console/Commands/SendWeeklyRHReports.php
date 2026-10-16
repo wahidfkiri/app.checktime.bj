@@ -17,8 +17,9 @@ use Carbon\Carbon;
 
 class SendWeeklyRHReports extends Command
 {
-    protected $signature = 'attendance:send-weekly-rh-reports 
-                            {--date= : Date de référence pour le rapport (format Y-m-d)}';
+    protected $signature = 'attendance:send-weekly-rh-reports
+                            {--date= : Date de référence pour le rapport (format Y-m-d)}
+                            {--client= : Limiter le traitement à un seul client (id)}';
     
     protected $description = 'Envoyer les rapports de présence hebdomadaires aux RH (email settings)';
 
@@ -67,13 +68,15 @@ class SendWeeklyRHReports extends Command
         // Liste des jours pour la vue
         $daysList = $this->buildDaysList($startDate, $endDate);
 
-        // Clients avec settings.email_is_active = true
+        // Clients avec settings.email_is_active = true (option --client pour cibler un seul)
+        $clientId = $this->option('client');
         $clients = Client::with('user', 'setting')
             ->whereHas('setting', function ($q) {
                 $q->where('email_is_active', true)
                   ->whereNotNull('email')
                   ->where('email', '!=', '');
             })
+            ->when($clientId, fn ($q) => $q->where('id', $clientId))
             ->get();
 
         $totalReportsSent = 0;

@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-center align-items-center">
         <div class="logo">
           <a href="{{route('dashboard')}}">
-            <img src="{{asset('public/logo.jpeg')}}" alt="Logo" srcset="" style=" height: 100px;">
+            <img src="{{asset('public/logo.png')}}" alt="Logo" srcset="" style=" height: 100px;">
           </a>
         </div>
         <div class="sidebar-toggler x">
@@ -169,6 +169,16 @@
           <a href="{{ route('users.index') }}" class="sidebar-link">
             <i class="bi bi-people"></i>
             <span>Utilisateurs</span>
+          </a>
+        </li>
+        @endcan
+
+        @can('menu.settings')
+        <!-- Notifications planifiées -->
+        <li class="sidebar-item @if(request()->routeIs('notifications.*')) active @endif">
+          <a href="{{ route('notifications.index') }}" class="sidebar-link">
+            <i class="bi bi-bell"></i>
+            <span>Notifications planifiées</span>
           </a>
         </li>
         @endcan

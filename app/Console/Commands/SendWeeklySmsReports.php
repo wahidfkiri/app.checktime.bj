@@ -16,7 +16,7 @@ use Carbon\Carbon;
 
 class SendWeeklySmsReports extends Command
 {
-    protected $signature = 'attendance:send-weekly-sms';
+    protected $signature = 'attendance:send-weekly-sms {--client= : Limiter à un seul client (id)}';
     protected $description = 'Envoyer les rapports de présence hebdomadaires par SMS chaque vendredi à 9h';
     
     protected SmsService $smsService;
@@ -46,7 +46,8 @@ class SendWeeklySmsReports extends Command
         
         $this->info("📊 Période du rapport: " . $startOfWeek->format('d/m/Y') . " au " . $endOfWeek->format('d/m/Y'));
         
-        $clients = Client::with('user')->get();
+        $clientId = $this->option('client');
+        $clients = Client::with('user')->when($clientId, fn ($q) => $q->where('id', $clientId))->get();
         
         $totalSmsSent     = 0;
         $totalSmsCost     = 0;

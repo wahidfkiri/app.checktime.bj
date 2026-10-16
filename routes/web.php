@@ -11,10 +11,12 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\Admin\ClientAdminController;
+use App\Http\Controllers\NotificationSettingsController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ScheduledNotificationController;
 use App\Http\Controllers\WorkHourController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AbsenceController;
@@ -129,6 +131,13 @@ Route::prefix('users')->name('users.')->middleware('permission:menu.users')->gro
     Route::get('/{id}', [UserController::class, 'show'])->name('show');
     Route::put('/{id}', [UserController::class, 'update'])->name('update');
     Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
+});
+
+// Notifications planifiées PAR CLIENT (activation/fréquence/exécution immédiate)
+Route::prefix('notifications')->name('notifications.')->middleware('permission:menu.settings')->group(function () {
+    Route::get('/', [ScheduledNotificationController::class, 'index'])->name('index');
+    Route::post('/jobs', [ScheduledNotificationController::class, 'updateJobs'])->name('jobs');
+    Route::post('/jobs/run', [ScheduledNotificationController::class, 'runJob'])->name('jobs.run');
 });
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
@@ -303,4 +312,11 @@ Route::middleware(['web', 'auth', 'role:super-admin'])
         Route::post('/clients/{id}/mot-de-passe', [ClientAdminController::class, 'resetPassword'])->name('clients.password');
         Route::get('/clients/{id}/impact-suppression', [ClientAdminController::class, 'deletionImpact'])->name('clients.impact');
         Route::delete('/clients/{id}', [ClientAdminController::class, 'destroy'])->name('clients.destroy');
+
+        // Paramètres de notification GLOBAUX (SMTP + clé API SMS)
+        Route::get('/notifications', [NotificationSettingsController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/smtp', [NotificationSettingsController::class, 'smtp'])->name('notifications.smtp');
+        Route::post('/notifications/smtp/test', [NotificationSettingsController::class, 'testSmtp'])->name('notifications.smtp.test');
+        Route::post('/notifications/sms', [NotificationSettingsController::class, 'sms'])->name('notifications.sms');
+        Route::post('/notifications/sms/test', [NotificationSettingsController::class, 'testSms'])->name('notifications.sms.test');
     });

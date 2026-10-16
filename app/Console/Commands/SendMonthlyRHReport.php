@@ -18,7 +18,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class SendMonthlyRHReport extends Command
 {
-    protected $signature = 'reports:send-monthly-rh {--test : Mode test} {--date= : Date spécifique}';
+    protected $signature = 'reports:send-monthly-rh {--test : Mode test} {--date= : Date spécifique} {--client= : Limiter à un seul client (id)}';
     protected $description = 'Envoyer les rapports mensuels RH par email le dernier jour du mois';
 
     public function handle()
@@ -31,7 +31,8 @@ class SendMonthlyRHReport extends Command
 
         $this->info("📊 Période du rapport: " . $startOfMonth->format('d/m/Y') . " au " . $endOfMonth->format('d/m/Y'));
 
-        $clients = Client::with('user')->get();
+        $clientId = $this->option('client');
+        $clients = Client::with('user')->when($clientId, fn ($q) => $q->where('id', $clientId))->get();
 
         if ($clients->isEmpty()) {
             $this->warn('❌ Aucun client trouvé.');

@@ -17,7 +17,7 @@ use Carbon\Carbon;
 
 class SendWeeklyAttendanceReports extends Command
 {
-    protected $signature = 'attendance:send-weekly-reports';
+    protected $signature = 'attendance:send-weekly-reports {--client= : Limiter le traitement à un seul client (id)}';
 
     protected $description = 'Envoyer les rapports de présence hebdomadaires aux employés chaque vendredi à 9h';
 
@@ -60,9 +60,11 @@ class SendWeeklyAttendanceReports extends Command
             $cur->addDay();
         }
 
-        // ── Clients actifs ──────────────────────────────────────────
+        // ── Clients actifs (option --client pour cibler un seul client) ──
+        $clientId = $this->option('client');
         $clients = Client::with('user')
           //  ->whereHas('user', fn ($q) => $q->where('status', 'active'))
+            ->when($clientId, fn ($q) => $q->where('id', $clientId))
             ->get();
 
         $totalEmailsSent  = 0;

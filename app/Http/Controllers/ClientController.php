@@ -166,6 +166,9 @@ class ClientController extends Controller
             $client = Client::create($validated + ['user_id' => $user->id]);
             $access_config = $client->accessConfigs()->create($validatedAccess);
 
+            // Provisionne les tâches planifiées par défaut du nouveau client.
+            \App\Models\ScheduledNotification::ensureDefaultsForClient($client->id);
+
 
             return response()->json([
                 'success' => true,
