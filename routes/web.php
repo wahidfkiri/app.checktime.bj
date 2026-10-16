@@ -73,8 +73,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('guest');
 });
 
+// Déconnexion : seulement `auth` (ne doit PAS dépendre de client.active/rôle,
+// sinon un super-admin sans client sélectionné ne peut pas se déconnecter).
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
 Route::middleware(['auth','web', 'role:super-admin|client|client-user','client.active'])->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/dashboard/stats', [DashboardController::class, 'getStatsJson'])->name('super-admin.stats');
     Route::get('/client/{client}/details', [DashboardController::class, 'getClientDetails'])->name('client.details');
