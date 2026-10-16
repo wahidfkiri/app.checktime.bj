@@ -320,7 +320,7 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="login-logo">
-                    <img src="{{ asset('public/logo.png') }}" alt="Logo" height="150">
+                    <img src="{{ asset('logo.png') }}" alt="Logo" height="150">
                 </div>
                 <p class="login-subtitle">Connectez-vous à votre compte</p>
             </div>

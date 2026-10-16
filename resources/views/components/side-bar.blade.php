@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-center align-items-center">
         <div class="logo">
           <a href="{{route('dashboard')}}">
-            <img src="{{asset('public/logo.png')}}" alt="Logo" srcset="" style=" height: 100px;">
+            <img src="{{asset('logo.png')}}" alt="Logo" srcset="" style=" height: 100px;">
           </a>
         </div>
         <div class="sidebar-toggler x">
