@@ -31,8 +31,9 @@ class AuthServiceProvider extends ServiceProvider
          * attribuer une à une. Retourner null laisse les autres rôles suivre
          * la logique habituelle.
          */
+        // Rôles pleins-droits : super-admin ET admin satisfont toute permission.
         Gate::before(function ($user) {
-            return $user->hasRole('super-admin') ? true : null;
+            return $user->hasAnyRole(['super-admin', 'admin']) ? true : null;
         });
     }
 }

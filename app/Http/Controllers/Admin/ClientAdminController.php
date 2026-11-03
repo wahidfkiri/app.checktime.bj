@@ -124,7 +124,7 @@ class ClientAdminController extends Controller
         }
 
         // Garde-fou : cette action vise les comptes clients, pas les pairs.
-        if ($client->user->hasRole('super-admin')) {
+        if ($client->user->hasAnyRole(['super-admin', 'admin'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'Ce compte est un super-admin : son mot de passe ne se change pas ici.',
@@ -259,7 +259,7 @@ class ClientAdminController extends Controller
             });
 
             // Hors transaction du client : clients.user_id référence users.
-            if ($utilisateur && !$utilisateur->hasRole('super-admin')) {
+            if ($utilisateur && !$utilisateur->hasAnyRole(['super-admin', 'admin'])) {
                 $utilisateur->delete();
             }
 

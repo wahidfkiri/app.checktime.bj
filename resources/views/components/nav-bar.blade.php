@@ -77,7 +77,7 @@
                     <li>
                       <h6 class="dropdown-header">Bonjour, {{auth()->user()->name}}!</h6>
                     </li>
-                    @role('super-admin')
+                    @hasanyrole('super-admin|admin')
                     <li>
                       <a class="dropdown-item" href="{{ route('admin.clients.index') }}"><i class="icon-mid bi bi-people me-2"></i> Administration</a>
                     </li>
@@ -90,7 +90,7 @@
                     </li>
                     @endif
                     <li><hr class="dropdown-divider"></li>
-                    @endrole
+                    @endhasanyrole
                     <li>
                       <a class="dropdown-item" href="{{ route('profile') }}"><i class="icon-mid bi bi-person me-2"></i> Mon
                         Profil</a>

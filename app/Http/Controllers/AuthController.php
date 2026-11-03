@@ -38,9 +38,10 @@ public function login(Request $request)
 
         $user = Auth::user();
 
-        // Super-admin : pas de fiche client propre. Il accède à l'espace
-        // d'administration et choisit ensuite le client dans lequel travailler.
-        if ($user->hasRole('super-admin')) {
+        // Rôles pleins-droits (super-admin / admin) : pas de fiche client propre.
+        // Ils accèdent à l'espace d'administration et choisissent ensuite le
+        // client dans lequel travailler.
+        if ($user->hasAnyRole(['super-admin', 'admin'])) {
             \App\Support\CurrentClient::clear(); // repartir sans contexte client
             $request->session()->regenerate();
 

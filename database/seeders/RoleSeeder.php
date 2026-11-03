@@ -20,6 +20,7 @@ class RoleSeeder extends Seeder
 {
     public const ROLES = [
         'super-admin' => 'Administrateur général',
+        'admin' => 'Administrateur (pleins-droits)',
         'client' => 'Administrateur du client',
     ];
 

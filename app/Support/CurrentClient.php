@@ -80,15 +80,22 @@ class CurrentClient
     /** Vrai si un super-admin travaille actuellement dans un client. */
     public static function isImpersonating(): bool
     {
-        return Auth::user()?->hasRole('super-admin') && session()->has(self::SESSION_KEY);
+        return Auth::user()?->hasAnyRole(['super-admin', 'admin']) && session()->has(self::SESSION_KEY);
     }
 
     private static function resolve($user): ?Client
     {
-        if ($user->hasRole('super-admin')) {
+        // Rôles pleins-droits (super-admin / admin) : travaillent dans le client
+        // sélectionné en session. Repli : leur propre client s'ils y sont liés.
+        if ($user->hasAnyRole(['super-admin', 'admin'])) {
             $clientId = session(self::SESSION_KEY);
-
-            return $clientId ? Client::find($clientId) : null;
+            if ($clientId) {
+                return Client::find($clientId);
+            }
+            if (!empty($user->client_id)) {
+                return Client::find($user->client_id);
+            }
+            return Client::where('user_id', $user->id)->first();
         }
 
         // Compte rattaché à un client (admin principal OU sous-compte) :

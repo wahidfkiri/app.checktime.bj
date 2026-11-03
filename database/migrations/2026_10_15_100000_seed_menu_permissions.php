@@ -64,9 +64,10 @@ return new class extends Migration
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
-        // Rôles garantis
+        // Rôles garantis (super-admin ET admin sont pleins-droits via Gate::before)
         $client = Role::firstOrCreate(['name' => 'client', 'guard_name' => 'web']);
         Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
 
         // Socle : le rôle `client` reçoit tout le catalogue de menu.
         $client->givePermissionTo($names);

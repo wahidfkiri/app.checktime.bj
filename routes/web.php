@@ -78,7 +78,7 @@ Route::middleware('guest')->group(function () {
 // sinon un super-admin sans client sélectionné ne peut pas se déconnecter).
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-Route::middleware(['auth','web', 'role:super-admin|client|client-user','client.active'])->group(function () {
+Route::middleware(['auth','web', 'role:super-admin|admin|client|client-user','client.active'])->group(function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/dashboard/stats', [DashboardController::class, 'getStatsJson'])->name('super-admin.stats');
     Route::get('/client/{client}/details', [DashboardController::class, 'getClientDetails'])->name('client.details');
@@ -306,7 +306,7 @@ Route::middleware(['auth','web'])->group(function () {
 | le super-admin y accède justement pour piloter les clients, y compris
 | inactifs. La création/modification réutilise le ClientController existant.
 */
-Route::middleware(['web', 'auth', 'role:super-admin'])
+Route::middleware(['web', 'auth', 'role:super-admin|admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {

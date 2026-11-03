@@ -38,7 +38,7 @@ class CheckClientActive
             // Un super-admin n'a pas de client propre : il doit d'abord en
             // « entrer » un. On l'oriente vers l'espace d'administration plutôt
             // que de renvoyer une erreur brute.
-            if ($user->hasRole('super-admin')) {
+            if ($user->hasAnyRole(['super-admin', 'admin'])) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'message'  => 'Sélectionnez un client pour continuer.',
