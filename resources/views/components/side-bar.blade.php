@@ -118,6 +118,14 @@
         <span>Missions</span>
     </a>
 </li>
+            @can('menu.regularizations')
+            <li class="submenu-item {{ request()->routeIs('authorizations.regularizations.*') ? 'active' : '' }}">
+                <a href="{{ route('authorizations.regularizations.index') }}">
+                    <i class="bi bi-lightning-charge me-2"></i>
+                    <span>Autre</span>
+                </a>
+            </li>
+            @endcan
             
             <!-- Retards -->
             <!-- <li class="submenu-item @if(request()->routeIs('delays.*')) active @endif">

@@ -41,6 +41,7 @@ return new class extends Migration
             'menu.missions'             => 'Autorisations — Missions',
             'menu.leaves'               => 'Autorisations — Congés',
             'menu.leave-types'          => 'Autorisations — Types de congés',
+            'menu.regularizations'      => 'Autorisations — Autre (régularisation de pointage)',
             // Pointages / rapports
             'menu.daily-attendance'     => 'Historique des pointages',
             'menu.reports'              => 'Rapports des présences',

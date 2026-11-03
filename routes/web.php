@@ -17,6 +17,7 @@ use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScheduledNotificationController;
+use App\Http\Controllers\RegularizationController;
 use App\Http\Controllers\WorkHourController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\AbsenceController;
@@ -195,6 +196,16 @@ Route::prefix('authorizations')->name('authorizations.')->group(function () {
         Route::get('/client/{client}', [EmployeePermissionController::class, 'byClient'])->name('by-client');
         Route::get('/export', [EmployeePermissionController::class, 'export'])->name('export');
     });
+
+    // Autre — régularisation de pointage (coupure d'électricité, oubli de pointage…)
+    Route::prefix('regularizations')->name('regularizations.')->middleware(['client.active', 'permission:menu.regularizations'])->group(function () {
+        Route::get('/', [RegularizationController::class, 'index'])->name('index');
+        Route::post('/check', [RegularizationController::class, 'checkConflicts'])->name('check');
+        Route::post('/', [RegularizationController::class, 'store'])->name('store');
+        Route::post('/causes', [RegularizationController::class, 'storeCause'])->name('causes.store');
+        Route::delete('/causes/{id}', [RegularizationController::class, 'destroyCause'])->name('causes.destroy');
+    });
+
     // Congés (existant)
     Route::resource('leaves', LeaveController::class);
 });
