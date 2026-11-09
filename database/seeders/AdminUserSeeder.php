@@ -26,10 +26,10 @@ class AdminUserSeeder extends Seeder
         $role = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
 
         $user = User::updateOrCreate(
-            ['email' => 'wahidfkiri5@gmail.com'],
+            ['email' => 'cadnel91@gmail.com'],
             [
-                'name' => 'Wahid Fkiri',
-                'password' => Hash::make('12345678'),
+                'name' => 'Cadnel Zohan',
+                'password' => Hash::make('Cadnel@2026'),
                 'email_verified_at' => now(),
             ]
         );
@@ -40,6 +40,6 @@ class AdminUserSeeder extends Seeder
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $this->command?->info('Compte administrateur prêt : wahidfkiri5@gmail.com (rôle super-admin).');
+        $this->command?->info('Compte administrateur prêt : cadnel91@gmail.com (rôle super-admin).');
     }
 }
