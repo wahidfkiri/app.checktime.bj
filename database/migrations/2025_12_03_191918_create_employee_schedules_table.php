@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->tinyInteger('day_of_week')->nullable();
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
+            $table->date('schedule_date')->nullable();
             $table->integer('break_minutes')->default(0);
             $table->timestamps();
         });
